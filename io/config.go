@@ -7,11 +7,17 @@ type Config struct {
 	NumIterations int
 	StartTime     time.Time
 	EndTime       time.Time
+	FuelModel     string
+	UpperLeft     int
+	BottomRight   int
 	Topography    string
 	IgnitionModel string
 	BurnoutModel  string
 	WeatherModel  string
-	FuelModel     string
-	UpperLeft     int
-	BottomRight   int
+	WeatherParams WeatherParams
+}
+
+type WeatherParams struct {
+	Direction int
+	Speed     int
 }

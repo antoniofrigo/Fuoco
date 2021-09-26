@@ -28,7 +28,7 @@ type Grid [][]Element
 
 // Creates a new grid with a given height and width in cells, with
 // a ring of buffer cells around them.
-func NewGrid(height uint8, width uint8) *Grid {
+func NewGrid(height uint16, width uint16) *Grid {
 	g := make(Grid, height+2)
 	for i := range g {
 		g[i] = make([]Element, width+2)
@@ -62,7 +62,7 @@ func (g *Grid) PrintState(msg string) {
 			} else if c == Buffer {
 				buffer.WriteString("x")
 			} else if c == Ready {
-				buffer.WriteString("%")
+				buffer.WriteString("|")
 			}
 		}
 		fmt.Println(buffer.String())
