@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"strconv"
 )
 
 type State int
@@ -20,8 +19,7 @@ const (
 )
 
 type Fuoco struct {
-	Config  *FuocoConfig
-	Counter FuocoGrid
+	Config *FuocoConfig
 }
 
 type FuocoConfig struct {
@@ -75,8 +73,8 @@ func (f *Fuoco) Run() error {
 		result := <-ch
 		results[i] = result
 	}
-	// stats := GenerateStats(results, f.Config.Width, f.Config.Height)
-	// PrintStats(&stats)
+	stats := GenerateStats(results, f.Config.Width, f.Config.Height)
+	PrintStats(&stats)
 	return nil
 }
 
@@ -141,19 +139,24 @@ func runCase(id int, ch chan *FuocoResult, config *FuocoConfig) {
 	for i := 0; i < (*config).Height; i++ {
 		result.G1[i] = make([]Cell, width)
 		result.G2[i] = make([]Cell, width)
-		copy(result.G1[i], (*(*config).InitialGrid)[i])
-		copy(result.G2[i], (*(*config).InitialGrid)[i])
 	}
-
-	r := rand.New(rand.NewSource(int64(7 * id)))
+	for i := 0; i < width; i++ {
+		for j := 0; j < height; j++ {
+			result.G1[i][j] = (*(*config).InitialGrid)[i][j]
+			result.G2[i][j] = (*(*config).InitialGrid)[i][j]
+		}
+	}
+	r := rand.New(rand.NewSource(int64(71 * id)))
 	sample := 0
 	result.G1[width/2][height/2].State = Burning
 
 	for it := uint(0); it < numIterations; it++ {
-		fmt.Println("Iteration: " + strconv.Itoa(int(it)))
-		PrintGrid(&result.G1)
 		if it%uint(sampling) == 0 {
-			copy(result.Timeline[sample], result.G1)
+			for i := 0; i < width; i++ {
+				for j := 0; j < height; j++ {
+					result.Timeline[sample][i][j] = result.G1[i][j]
+				}
+			}
 			result.Count++
 			sample++
 		}
@@ -181,8 +184,11 @@ func runCase(id int, ch chan *FuocoResult, config *FuocoConfig) {
 				}
 			}
 		}
-
-		copy(result.G1, result.G2)
+		for i := 0; i < width; i++ {
+			for j := 0; j < height; j++ {
+				result.G1[i][j] = result.G2[i][j]
+			}
+		}
 	}
 	ch <- &result
 }

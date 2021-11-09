@@ -28,7 +28,6 @@ func LinearIgnition(g *FuocoGrid, _ int, a int, b int) float64 {
 }
 
 func LinearFuelIgnition(g *FuocoGrid, _ int, a int, b int) float64 {
-
 	for i := a - 1; i <= a+1; i++ {
 		for j := b - 1; j <= b+1; j++ {
 			if i == a && j == b {
@@ -42,7 +41,7 @@ func LinearFuelIgnition(g *FuocoGrid, _ int, a int, b int) float64 {
 	return 1
 }
 
-// No index sanitization performed
+// No index sanitation performed
 func LinearFuelBurnout(g *FuocoGrid, _ int, a int, b int) float64 {
 	return 1 - (*g)[a][b].Fuel/10
 }

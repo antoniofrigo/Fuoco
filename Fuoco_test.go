@@ -15,9 +15,9 @@ func TestFuocoConfiguration(t *testing.T) {
 	SetStateReady(&grid)
 
 	config := FuocoConfig{
-		NumCases:       1,
-		NumIterations:  10,
-		Sampling:       1,
+		NumCases:       10,
+		NumIterations:  20,
+		Sampling:       2,
 		Height:         height,
 		Width:          width,
 		InitialGrid:    &grid,
