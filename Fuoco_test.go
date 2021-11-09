@@ -7,25 +7,28 @@ import (
 
 func TestFuocoConfiguration(t *testing.T) {
 	f := New()
-	height := 100
-	width := 100
+	height := 20
+	width := 20
 	grid := MakeInitialGrid(height, width)
-	SetConstantFuel(&grid, 0.5)
+	SetConstantFuel(&grid, 0.7)
 	SetConstantElevation(&grid, 100)
 	SetStateReady(&grid)
 
 	config := FuocoConfig{
+		NumCases:       1,
 		NumIterations:  10,
+		Sampling:       1,
 		Height:         height,
 		Width:          width,
 		InitialGrid:    &grid,
-		TopographyFunc: Constant,
-		WeatherFunc:    Constant,
-		FuelFunc:       Constant,
+		TopographyFunc: LinearIgnition,
+		WeatherFunc:    One,
+		FuelFunc:       One,
+		BurnoutFunc:    LinearFuelBurnout,
 	}
 	err := f.SetConfig(&config)
 	if err != nil {
-		log.Fatalf("Unable to create configuration")
+		log.Fatal(err)
 	}
 	err = f.Run()
 	_ = err
