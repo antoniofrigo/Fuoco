@@ -62,7 +62,7 @@ func New() (f *Fuoco) {
 	return f
 }
 
-func (f *Fuoco) Run() error {
+func (f *Fuoco) Run() (FuocoStats, error) {
 	ch := make(chan *FuocoResult)
 	num := f.Config.NumCases
 	for i := 0; i < int(num); i++ {
@@ -74,8 +74,7 @@ func (f *Fuoco) Run() error {
 		results[i] = result
 	}
 	stats := GenerateStats(results, f.Config.Width, f.Config.Height)
-	PrintStats(&stats)
-	return nil
+	return stats, nil
 }
 
 // Sets the configuration variables
@@ -128,17 +127,17 @@ func runCase(id int, ch chan *FuocoResult, config *FuocoConfig) {
 	numSamples := int(math.Ceil(float64((*config).NumIterations) / sampling))
 	result.Timeline = make([]FuocoGrid, numSamples)
 	for s := 0; s < numSamples; s++ {
-		result.Timeline[s] = make([][]Cell, height)
+		result.Timeline[s] = make([][]Cell, width)
 		for i := 0; i < height; i++ {
-			result.Timeline[s][i] = make([]Cell, width)
+			result.Timeline[s][i] = make([]Cell, height)
 		}
 	}
 
-	result.G1 = make([][]Cell, height)
-	result.G2 = make([][]Cell, height)
-	for i := 0; i < (*config).Height; i++ {
-		result.G1[i] = make([]Cell, width)
-		result.G2[i] = make([]Cell, width)
+	result.G1 = make([][]Cell, width)
+	result.G2 = make([][]Cell, width)
+	for i := 0; i < width; i++ {
+		result.G1[i] = make([]Cell, height)
+		result.G2[i] = make([]Cell, height)
 	}
 	for i := 0; i < width; i++ {
 		for j := 0; j < height; j++ {

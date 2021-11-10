@@ -37,6 +37,17 @@ func SetConstantElevation(grid *FuocoGrid, value int) error {
 	return nil
 }
 
+func SetLinearElevation(grid *FuocoGrid, value int) error {
+	dx := value / (len(*grid))
+	dy := value / (len((*grid)[0]))
+	for i := 0; i < len(*grid); i++ {
+		for j := 0; j < len((*grid)[0]); j++ {
+			(*grid)[i][j].Elevation = i*dx + j*dy
+		}
+	}
+	return nil
+}
+
 // Sets the elevation in meters of a given cell
 func SetStateReady(grid *FuocoGrid) error {
 	for i := 0; i < len(*grid); i++ {

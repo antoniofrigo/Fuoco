@@ -2,6 +2,8 @@ package Fuoco
 
 import (
 	"log"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -11,17 +13,23 @@ func TestFuocoConfiguration(t *testing.T) {
 	width := 20
 	grid := MakeInitialGrid(height, width)
 	SetConstantFuel(&grid, 0.7)
-	SetConstantElevation(&grid, 100)
+	SetLinearElevation(&grid, 100)
 	SetStateReady(&grid)
+	for _, row := range grid {
+		var s strings.Builder
+		for _, cell := range row {
+			s.WriteString(strconv.Itoa(cell.Elevation) + " ")
+		}
+	}
 
 	config := FuocoConfig{
-		NumCases:       10,
+		NumCases:       100,
 		NumIterations:  20,
 		Sampling:       2,
 		Height:         height,
 		Width:          width,
 		InitialGrid:    &grid,
-		TopographyFunc: LinearIgnition,
+		TopographyFunc: LinearElevationIgnition,
 		WeatherFunc:    One,
 		FuelFunc:       One,
 		BurnoutFunc:    LinearFuelBurnout,
@@ -30,6 +38,7 @@ func TestFuocoConfiguration(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = f.Run()
+	stats, err := f.Run()
 	_ = err
+	PrintStats(&stats)
 }
