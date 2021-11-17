@@ -1,7 +1,6 @@
 package Fuoco
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"math/rand"
@@ -20,19 +19,6 @@ const (
 
 type Fuoco struct {
 	Config *FuocoConfig
-}
-
-type FuocoConfig struct {
-	NumCases       uint
-	NumIterations  uint
-	Height         int
-	Width          int
-	Sampling       int // Sample every N iterations
-	TopographyFunc ModelFunc
-	WeatherFunc    ModelFunc
-	FuelFunc       ModelFunc
-	BurnoutFunc    ModelFunc
-	InitialGrid    *FuocoGrid
 }
 
 type Cell struct {
@@ -75,39 +61,6 @@ func (f *Fuoco) Run() (FuocoStats, error) {
 	}
 	stats := GenerateStats(results, f.Config.Width, f.Config.Height)
 	return stats, nil
-}
-
-// Sets the configuration variables
-func (f *Fuoco) SetConfig(config *FuocoConfig) error {
-	if config.NumIterations == 0 {
-		return errors.New("NumIterations must be greater than 0")
-	}
-	if config.Height == 0 || config.Width == 0 {
-		return errors.New("Height and width must be greater than 0")
-	}
-	if len(*(config.InitialGrid)) != config.Width {
-		return errors.New("InitialGrid and Width must have same length")
-	}
-	if len((*(config.InitialGrid))[0]) != config.Height {
-		return errors.New("InitialGrid[] and Height must have same length")
-	}
-	if config.TopographyFunc == nil {
-		return errors.New("TopographyFunc must be defined")
-	}
-	if config.WeatherFunc == nil {
-		return errors.New("WeatherFunc must be defined")
-	}
-	if config.FuelFunc == nil {
-		return errors.New("FuelFunc must be defined")
-	}
-	if config.FuelFunc == nil {
-		return errors.New("BurnoutFunc must be defined")
-	}
-	if config.Sampling <= 0 {
-		return errors.New("Sampling must be specified")
-	}
-	f.Config = config
-	return nil
 }
 
 // Runs each individual case of the simulation
