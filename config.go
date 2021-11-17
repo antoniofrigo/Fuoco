@@ -25,6 +25,8 @@ func (f *Fuoco) SetConfig(config *FuocoConfig) error {
 	return nil
 }
 
+// Validate the configuration.
+// TODO: Make this nicer.
 func (f *Fuoco) validateConfig(config *FuocoConfig) error {
 	if config.NumIterations == 0 {
 		return errors.New("NumIterations must be greater than 0")

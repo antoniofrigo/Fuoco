@@ -100,6 +100,8 @@ func runCase(id int, ch chan *FuocoResult, config *FuocoConfig) {
 	}
 	r := rand.New(rand.NewSource(int64(71 * id)))
 	sample := 0
+
+	// Ignition
 	result.G1[width/2][height/2].State = Burning
 
 	for it := uint(0); it < numIterations; it++ {
@@ -113,6 +115,7 @@ func runCase(id int, ch chan *FuocoResult, config *FuocoConfig) {
 			sample++
 		}
 
+		// Update to the next timestep G1 -> G2
 		for i := 1; i < height-1; i++ {
 			for j := 1; j < width-1; j++ {
 				cell := result.G1[i][j]
@@ -136,6 +139,8 @@ func runCase(id int, ch chan *FuocoResult, config *FuocoConfig) {
 				}
 			}
 		}
+
+		// Copy new grid into the old one
 		for i := 0; i < width; i++ {
 			for j := 0; j < height; j++ {
 				result.G1[i][j] = result.G2[i][j]
