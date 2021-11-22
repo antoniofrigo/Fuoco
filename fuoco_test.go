@@ -1,7 +1,9 @@
 package Fuoco
 
 import (
+	"image/png"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -9,11 +11,11 @@ import (
 
 func TestFuocoConfiguration(t *testing.T) {
 	f := New()
-	height := 20
-	width := 20
+	height := 100
+	width := 100
 	grid := MakeInitialGrid(height, width)
 	SetConstantFuel(&grid, 0.7)
-	SetLinearElevation(&grid, 100)
+	SetConstantElevation(&grid, 1000)
 	SetStateReady(&grid)
 	for _, row := range grid {
 		var s strings.Builder
@@ -23,8 +25,8 @@ func TestFuocoConfiguration(t *testing.T) {
 	}
 
 	config := FuocoConfig{
-		NumCases:       10,
-		NumIterations:  20,
+		NumCases:       100,
+		NumIterations:  100,
 		Sampling:       2,
 		Height:         height,
 		Width:          width,
@@ -40,5 +42,8 @@ func TestFuocoConfiguration(t *testing.T) {
 	}
 	stats, err := f.Run()
 	_ = err
-	PrintStats(&stats)
+	img := GeneratePNG(stats.Frames[49])
+	file, err := os.Create("../../test.png")
+	png.Encode(file, img)
+	file.Close()
 }
