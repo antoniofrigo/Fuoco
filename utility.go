@@ -1,5 +1,29 @@
 package fuoco
 
+import (
+	"fmt"
+	"strings"
+)
+
+func printState(stateGrid *[][]State) {
+	for _, row := range *stateGrid {
+		var s strings.Builder
+		for _, value := range row {
+			switch value {
+			case NoFuel:
+				s.WriteString("_")
+			case Ready:
+				s.WriteString("%")
+			case Burning:
+				s.WriteString("#")
+			case BurnedOut:
+				s.WriteString(".")
+			}
+		}
+		fmt.Println(s.String())
+	}
+}
+
 // Creates an empty state grid
 func MakeStateGrid(height, width int) [][]State {
 	stateGrid := make([][]State, height)

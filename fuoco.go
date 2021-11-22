@@ -2,6 +2,7 @@ package fuoco
 
 import (
 	"fmt"
+	"math/rand"
 )
 
 type State int
@@ -16,7 +17,7 @@ const (
 type FuocoConfig struct {
 	NumCases             uint
 	NumIterations        uint
-	NumSamples           int // Number of samples
+	NumSample            int // Number of samples
 	Height               int // Height of grid
 	Width                int // Width of grid
 	TopographyFunc       ModelFunc
@@ -35,7 +36,7 @@ type FuocoConfig struct {
 type Fuoco struct {
 	FuocoConfig
 
-	freqSamples int
+	freqSample int
 }
 
 // Signature for function that propagates state changes.
@@ -56,7 +57,7 @@ func New(config FuocoConfig) (f *Fuoco) {
 }
 
 func (f Fuoco) Run() {
-	f.freqSamples = int(f.NumIterations) / f.NumSamples
+	f.freqSample = int(f.NumIterations) / f.NumSample
 
 	ch := make(chan *CaseResult)
 	for i := 0; i < int(f.NumCases); i++ {
@@ -70,23 +71,22 @@ func (f Fuoco) Run() {
 
 // Runs each individual case of the simulation
 func (f Fuoco) runCase(id int, ch chan *CaseResult) {
-	fmt.Println("HERE")
-	// fmt.Println("Running case:", id)
+	fmt.Println("Running case:", id)
 	result := CaseResult{ID: id}
 
 	// Unpack config
 	height := f.Height
 	width := f.Width
-	// TopographyFunc := f.TopographyFunc
-	// WeatherFunc := f.WeatherFunc
-	// FuelFunc := f.FuelFunc
-	// BurnoutFunc := f.BurnoutFunc
+	TopographyFunc := f.TopographyFunc
+	WeatherFunc := f.WeatherFunc
+	FuelFunc := f.FuelFunc
+	BurnoutFunc := f.BurnoutFunc
 	numIterations := f.NumIterations
-	numSamples := f.NumSamples
+	numSample := f.NumSample
 
 	// Allocate frames samples
-	result.Frames = make([][][]State, numSamples)
-	for s := 0; s < numSamples; s++ {
+	result.Frames = make([][][]State, numSample)
+	for s := 0; s < numSample; s++ {
 		result.Frames[s] = make([][]State, height)
 		for i, _ := range result.Frames[s] {
 			result.Frames[s][i] = make([]State, width)
@@ -94,67 +94,67 @@ func (f Fuoco) runCase(id int, ch chan *CaseResult) {
 	}
 
 	// Setup the propagation grids. Note that there will be a
-	// set of border cells of width 1 around the actual grid
+	// set of border cells of width 1 around the actual grid.
 	G1 := make([][]State, height+2)
 	G2 := make([][]State, height+2)
 	for i := 0; i < height+2; i++ {
 		G1[i] = make([]State, width+2)
 		G2[i] = make([]State, width+2)
 	}
-	for i := 1; i < width+1; i++ {
-		for j := 1; j < height+1; j++ {
+	for i := 1; i < height+1; i++ {
+		for j := 1; j < width+1; j++ {
 			G1[i][j] = f.InitialState[i-1][j-1]
 			G2[i][j] = f.InitialState[i-1][j-1]
 		}
 	}
-	// r := rand.New(rand.NewSource(int64(71 * id)))
-	// sample := 0
+	r := rand.New(rand.NewSource(int64(71 * id)))
+	sample := 0
 
 	// Ignition
-	G1[(width+1)/2][(height+1)/2] = Burning
+	G1[(height+1)/2][(width+1)/2] = Burning
+	G2[(height+1)/2][(width+1)/2] = Burning
 
 	for it := uint(0); it < numIterations; it++ {
-		// 	if it%uint(sampling) == 0 {
-		// 		for i := 0; i < width; i++ {
-		// 			for j := 0; j < height; j++ {
-		// 				result.Timeline[sample][i][j] = G1[i][j]
-		// 			}
-		// 		}
-		// 		result.Count++
-		// 		sample++
-		// 	}
+		if it%uint(f.freqSample) == 0 {
+			for i := 1; i < height+1; i++ {
+				for j := 1; j < width+1; j++ {
+					result.Frames[sample][i-1][j-1] = G1[i][j]
+				}
+			}
+			result.Count++
+			sample++
+		}
+		// Update to the next timestep G1 -> G2
+		for i := 1; i < height+1; i++ {
+			for j := 1; j < width+1; j++ {
+				state := G1[i][j]
+				switch state {
+				case Ready:
+					var p float64 = 1.0
+					p *= TopographyFunc(&(G1), &(f.InitialElevation), i, j)
+					p *= WeatherFunc(&(G1), &(f.InitialMoisture), i, j)
+					p *= FuelFunc(&(G1), &(f.InitialFuel), i, j)
+					p = 1 - p
+					if p > r.Float64() {
+						G2[i][j] = Burning
+					}
+				case Burning:
+					var p float64 = 1.0
+					p *= BurnoutFunc(&(G1), nil, i, j)
+					p = 1 - p
+					if p > r.Float64() {
+						G2[i][j] = BurnedOut
+					}
+				}
+			}
+		}
 
-		// 	// Update to the next timestep G1 -> G2
-		// 	for i := 1; i < height-1; i++ {
-		// 		for j := 1; j < width-1; j++ {
-		// 			cell := G1[i][j]
-		// 			switch cell.State {
-		// 			case Ready:
-		// 				var p float64 = 1.0
-		// 				p *= TopographyFunc(&(G1), 0, i, j)
-		// 				p *= WeatherFunc(&(G1), 0, i, j)
-		// 				p *= FuelFunc(&(G1), 0, i, j)
-		// 				p = 1 - p
-		// 				if p > r.Float64() {
-		// 					G2[i][j].State = Burning
-		// 				}
-		// 			case Burning:
-		// 				var p float64 = 1.0
-		// 				p *= BurnoutFunc(&(G1), 0, i, j)
-		// 				p = 1 - p
-		// 				if p > r.Float64() {
-		// 					G2[i][j].State = BurnedOut
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-
-		// 	// Copy new grid into the old one
-		// 	for i := 0; i < width; i++ {
-		// 		for j := 0; j < height; j++ {
-		// 			G1[i][j] = G2[i][j]
-		// 		}
-		// 	}
+		// Copy new grid into the old one
+		for i, row := range G1 {
+			for j, _ := range row {
+				G1[i][j] = G2[i][j]
+			}
+		}
 	}
 	ch <- &result
 }
