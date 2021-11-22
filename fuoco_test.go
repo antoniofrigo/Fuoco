@@ -11,11 +11,11 @@ import (
 
 func TestFuocoConfiguration(t *testing.T) {
 	f := New()
-	height := 100
-	width := 100
+	height := 200
+	width := 200
 	grid := MakeInitialGrid(height, width)
 	SetConstantFuel(&grid, 0.7)
-	SetConstantElevation(&grid, 1000)
+	SetValleyElevation(&grid, 1000)
 	SetStateReady(&grid)
 	for _, row := range grid {
 		var s strings.Builder

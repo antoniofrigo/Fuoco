@@ -17,6 +17,7 @@ const (
 	BurnedOut
 )
 
+// The main Fuoco object
 type Fuoco struct {
 	Config *FuocoConfig
 }
@@ -35,12 +36,11 @@ type Cell struct {
 // to this quantity.
 type ModelFunc func(g *FuocoGrid, t int, i int, j int) float64
 
+// Result of an individual case
 type FuocoResult struct {
 	ID       int
 	Timeline []FuocoGrid
 	Count    int
-	G1       FuocoGrid
-	G2       FuocoGrid
 }
 
 func New() (f *Fuoco) {
@@ -89,29 +89,29 @@ func runCase(id int, ch chan *FuocoResult, config *FuocoConfig) {
 	}
 
 	// Setup the propagation grids
-	result.G1 = make([][]Cell, width)
-	result.G2 = make([][]Cell, width)
+	var G1 FuocoGrid = make([][]Cell, width)
+	var G2 FuocoGrid = make([][]Cell, width)
 	for i := 0; i < width; i++ {
-		result.G1[i] = make([]Cell, height)
-		result.G2[i] = make([]Cell, height)
+		G1[i] = make([]Cell, height)
+		G2[i] = make([]Cell, height)
 	}
 	for i := 0; i < width; i++ {
 		for j := 0; j < height; j++ {
-			result.G1[i][j] = (*(*config).InitialGrid)[i][j]
-			result.G2[i][j] = (*(*config).InitialGrid)[i][j]
+			G1[i][j] = (*(*config).InitialGrid)[i][j]
+			G2[i][j] = (*(*config).InitialGrid)[i][j]
 		}
 	}
 	r := rand.New(rand.NewSource(int64(71 * id)))
 	sample := 0
 
 	// Ignition
-	result.G1[width/2][height/2].State = Burning
+	G1[width/2][height/2].State = Burning
 
 	for it := uint(0); it < numIterations; it++ {
 		if it%uint(sampling) == 0 {
 			for i := 0; i < width; i++ {
 				for j := 0; j < height; j++ {
-					result.Timeline[sample][i][j] = result.G1[i][j]
+					result.Timeline[sample][i][j] = G1[i][j]
 				}
 			}
 			result.Count++
@@ -121,23 +121,23 @@ func runCase(id int, ch chan *FuocoResult, config *FuocoConfig) {
 		// Update to the next timestep G1 -> G2
 		for i := 1; i < height-1; i++ {
 			for j := 1; j < width-1; j++ {
-				cell := result.G1[i][j]
+				cell := G1[i][j]
 				switch cell.State {
 				case Ready:
 					var p float64 = 1.0
-					p *= TopographyFunc(&(result.G1), 0, i, j)
-					p *= WeatherFunc(&(result.G1), 0, i, j)
-					p *= FuelFunc(&(result.G1), 0, i, j)
+					p *= TopographyFunc(&(G1), 0, i, j)
+					p *= WeatherFunc(&(G1), 0, i, j)
+					p *= FuelFunc(&(G1), 0, i, j)
 					p = 1 - p
 					if p > r.Float64() {
-						result.G2[i][j].State = Burning
+						G2[i][j].State = Burning
 					}
 				case Burning:
 					var p float64 = 1.0
-					p *= BurnoutFunc(&(result.G1), 0, i, j)
+					p *= BurnoutFunc(&(G1), 0, i, j)
 					p = 1 - p
 					if p > r.Float64() {
-						result.G2[i][j].State = BurnedOut
+						G2[i][j].State = BurnedOut
 					}
 				}
 			}
@@ -146,7 +146,7 @@ func runCase(id int, ch chan *FuocoResult, config *FuocoConfig) {
 		// Copy new grid into the old one
 		for i := 0; i < width; i++ {
 			for j := 0; j < height; j++ {
-				result.G1[i][j] = result.G2[i][j]
+				G1[i][j] = G2[i][j]
 			}
 		}
 	}
