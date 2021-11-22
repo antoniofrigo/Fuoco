@@ -23,7 +23,7 @@ func TestFuocoConfiguration(t *testing.T) {
 	}
 
 	config := FuocoConfig{
-		NumCases:       100,
+		NumCases:       10,
 		NumIterations:  20,
 		Sampling:       2,
 		Height:         height,

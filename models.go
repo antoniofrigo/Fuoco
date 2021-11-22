@@ -66,3 +66,7 @@ func LinearFuelIgnition(g *FuocoGrid, _ int, a int, b int) float64 {
 func LinearFuelBurnout(g *FuocoGrid, _ int, a int, b int) float64 {
 	return 1 - (*g)[a][b].Fuel/10
 }
+
+func LinearMoistureIgnition(g *FuocoGrid, _ int, a int, b int) float64 {
+	return 1 - (*g)[a][b].Moisture/10
+}

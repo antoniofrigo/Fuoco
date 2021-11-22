@@ -68,6 +68,7 @@ func runCase(id int, ch chan *FuocoResult, config *FuocoConfig) {
 	fmt.Println("Running case:", id)
 	result := FuocoResult{ID: id}
 
+	// Unpack config
 	height := (*config).Height
 	width := (*config).Width
 	TopographyFunc := (*config).TopographyFunc
@@ -77,6 +78,7 @@ func runCase(id int, ch chan *FuocoResult, config *FuocoConfig) {
 	numIterations := (*config).NumIterations
 	sampling := float64((*config).Sampling)
 
+	// Allocate timeline samples
 	numSamples := int(math.Ceil(float64((*config).NumIterations) / sampling))
 	result.Timeline = make([]FuocoGrid, numSamples)
 	for s := 0; s < numSamples; s++ {
@@ -86,6 +88,7 @@ func runCase(id int, ch chan *FuocoResult, config *FuocoConfig) {
 		}
 	}
 
+	// Setup the propagation grids
 	result.G1 = make([][]Cell, width)
 	result.G2 = make([][]Cell, width)
 	for i := 0; i < width; i++ {

@@ -6,19 +6,19 @@ import (
 )
 
 type FuocoStats struct {
-	Counts [][][]int
+	Frames [][][]int
 	Count  int
 }
 
 func GenerateStats(results [](*FuocoResult), width int, height int) FuocoStats {
 	var stats FuocoStats = FuocoStats{}
 	numSamples := len((*(results[0])).Timeline)
-	stats.Counts = make([][][]int, numSamples)
+	stats.Frames = make([][][]int, numSamples)
 
 	for it := 0; it < numSamples; it++ {
-		stats.Counts[it] = make([][]int, width)
+		stats.Frames[it] = make([][]int, width)
 		for i := 0; i < width; i++ {
-			stats.Counts[it][i] = make([]int, height)
+			stats.Frames[it][i] = make([]int, height)
 		}
 	}
 
@@ -28,7 +28,7 @@ func GenerateStats(results [](*FuocoResult), width int, height int) FuocoStats {
 				for j := 0; j < height; j++ {
 					state := (*result).Timeline[it][i][j].State
 					if state == BurnedOut || state == Burning {
-						stats.Counts[it][i][j]++
+						stats.Frames[it][i][j]++
 					}
 				}
 			}
@@ -38,8 +38,8 @@ func GenerateStats(results [](*FuocoResult), width int, height int) FuocoStats {
 }
 
 func PrintStats(stats *FuocoStats) {
-	counts := (*stats).Counts
-	for it, frame := range counts {
+	frames := (*stats).Frames
+	for it, frame := range frames {
 		fmt.Println("Case: " + strconv.Itoa(it))
 		for _, line := range frame {
 			fmt.Println(line)
