@@ -1,49 +1,43 @@
-package Fuoco
+package fuoco
 
 import (
-	"image/png"
-	"log"
-	"os"
-	"strconv"
-	"strings"
 	"testing"
 )
 
 func TestFuocoConfiguration(t *testing.T) {
-	f := New()
-	height := 200
-	width := 200
-	grid := MakeInitialGrid(height, width)
-	SetConstantFuel(&grid, 0.7)
-	SetValleyElevation(&grid, 1000)
-	SetStateReady(&grid)
-	for _, row := range grid {
-		var s strings.Builder
-		for _, cell := range row {
-			s.WriteString(strconv.Itoa(cell.Elevation) + " ")
-		}
-	}
+
+	height := 100
+	width := 150
+
+	stateGrid := MakeStateGrid(height, width)
+	elevationGrid := MakeParamGrid(height, width)
+	fuelGrid := MakeParamGrid(height, width)
+	moistureGrid := MakeParamGrid(height, width)
+
+	SetStateGrid(&stateGrid, Ready)
+	SetParamGrid(&elevationGrid, 100)
+	SetParamGrid(&fuelGrid, 100)
+	SetParamGrid(&moistureGrid, 100)
 
 	config := FuocoConfig{
-		NumCases:       100,
-		NumIterations:  100,
-		Sampling:       2,
-		Height:         height,
-		Width:          width,
-		InitialGrid:    &grid,
-		TopographyFunc: LinearElevationIgnition,
-		WeatherFunc:    One,
-		FuelFunc:       One,
-		BurnoutFunc:    LinearFuelBurnout,
+		NumCases:             11,
+		NumIterations:        100,
+		NumSamples:           10,
+		Height:               height,
+		Width:                width,
+		TopographyFunc:       Spontaneous,
+		WeatherFunc:          Spontaneous,
+		FuelFunc:             Spontaneous,
+		BurnoutFunc:          Spontaneous,
+		InitialState:         stateGrid,
+		InitialElevation:     elevationGrid,
+		InitialFuel:          fuelGrid,
+		InitialMoisture:      moistureGrid,
+		InitialWindDirection: 1.2,
+		InitialWindSpeed:     40.0,
 	}
-	err := f.SetConfig(&config)
-	if err != nil {
-		log.Fatal(err)
-	}
-	stats, err := f.Run()
-	_ = err
-	img := GeneratePNG(stats.Frames[49])
-	file, err := os.Create("../../test.png")
-	png.Encode(file, img)
-	file.Close()
+
+	f := New(config)
+	f.Run()
+	_ = f
 }

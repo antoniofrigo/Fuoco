@@ -1,4 +1,4 @@
-package Fuoco
+package fuoco
 
 import (
 	"image"
