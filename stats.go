@@ -1,9 +1,9 @@
 package fuoco
 
-// type FuocoStats struct {
-// 	Frames [][][]int
-// 	Count  int
-// }
+type FuocoStats struct {
+	Frames [][][]int
+	Count  int
+}
 
 // func GenerateStats(results [](*FuocoResult), width int, height int) FuocoStats {
 // 	var stats FuocoStats = FuocoStats{}

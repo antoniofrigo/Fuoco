@@ -35,7 +35,7 @@ type FuocoConfig struct {
 // The main Fuoco object
 type Fuoco struct {
 	FuocoConfig
-
+	Frames     [][][]int
 	freqSample int
 }
 
@@ -53,6 +53,15 @@ type CaseResult struct {
 
 func New(config FuocoConfig) (f *Fuoco) {
 	f = &Fuoco{FuocoConfig: config}
+
+	(*f).Frames = make([][][]int, (*f).NumSample)
+	for idx, _ := range (*f).Frames {
+		(*f).Frames[idx] = make([][]int, (*f).Height)
+		for i, _ := range (*f).Frames[idx] {
+			(*f).Frames[idx][i] = make([]int, (*f).Width)
+		}
+	}
+
 	return f
 }
 
@@ -66,6 +75,19 @@ func (f Fuoco) Run() {
 	results := make([]*CaseResult, f.NumCases)
 	for i := 0; i < int(f.NumCases); i++ {
 		results[i] = <-ch
+	}
+
+	for s := 0; s < int(f.NumCases); s++ {
+		for idx := 0; idx < f.NumSample; idx++ {
+			frame := (*(results[s])).Frames[idx]
+			for i, _ := range frame {
+				for j, value := range frame[i] {
+					if value == Burning || value == BurnedOut {
+						f.Frames[idx][i][j]++
+					}
+				}
+			}
+		}
 	}
 }
 

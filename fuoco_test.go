@@ -6,8 +6,8 @@ import (
 
 func TestFuocoConfiguration(t *testing.T) {
 
-	height := 10
-	width := 15
+	height := 20
+	width := 30
 
 	stateGrid := MakeStateGrid(height, width)
 	elevationGrid := MakeParamGrid(height, width)
