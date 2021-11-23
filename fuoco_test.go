@@ -6,8 +6,8 @@ import (
 
 func TestFuocoConfiguration(t *testing.T) {
 
-	height := 20
-	width := 30
+	height := 100
+	width := 150
 
 	stateGrid := MakeStateGrid(height, width)
 	elevationGrid := MakeParamGrid(height, width)
@@ -20,9 +20,10 @@ func TestFuocoConfiguration(t *testing.T) {
 	SetParamGrid(&moistureGrid, 100)
 
 	config := FuocoConfig{
-		NumCases:             1,
+		NumCases:             5,
 		NumIterations:        20,
-		NumSample:            1,
+		NumSample:            10,
+		ImageScale:           5,
 		Height:               height,
 		Width:                width,
 		TopographyFunc:       LinearIgnition,

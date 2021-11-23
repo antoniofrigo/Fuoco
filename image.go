@@ -3,15 +3,36 @@ package fuoco
 import (
 	"image"
 	"image/color"
+	"image/png"
+	"os"
 )
 
 const imageSize = 1000
 
-func GeneratePNG(frame [][]int) image.Image {
-	scale := 1000 / len(frame)
-	width := scale * len(frame)
-	height := scale * len(frame[0])
+func (f *Fuoco) generateImages() error {
+	(*f).Images = make([]image.Image, (*f).NumSample)
+	for idx, _ := range (*f).Images {
+		(*f).Images[idx] = (*f).generatePNG((*f).Frames[idx])
+	}
+	return nil
+}
 
+func (f Fuoco) saveImage(name string, img image.Image) error {
+	file, err := os.Create(name)
+	if err != nil {
+		return err
+	}
+	if err := png.Encode(file, img); err != nil {
+		file.Close()
+		return err
+	}
+	return nil
+}
+
+func (f Fuoco) generatePNG(frame [][]int) image.Image {
+	scale := f.ImageScale
+	height := scale * f.Height
+	width := scale * f.Width
 	maxValue := 0
 	for _, row := range frame {
 		for _, value := range row {
@@ -21,7 +42,7 @@ func GeneratePNG(frame [][]int) image.Image {
 		}
 	}
 
-	img := image.NewNRGBA(image.Rect(0, 0, width, height))
+	img := image.NewNRGBA(image.Rect(0, 0, height, width))
 	for i, row := range frame {
 		for j, value := range row {
 			v := uint8(255.0 * value / (1.0 * maxValue))
@@ -37,7 +58,6 @@ func GeneratePNG(frame [][]int) image.Image {
 			}
 		}
 	}
-
 	return img
 }
 

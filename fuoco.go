@@ -2,6 +2,8 @@ package fuoco
 
 import (
 	"fmt"
+	"image"
+	"log"
 	"math/rand"
 )
 
@@ -20,6 +22,7 @@ type FuocoConfig struct {
 	NumSample            int // Number of samples
 	Height               int // Height of grid
 	Width                int // Width of grid
+	ImageScale           int // Output image has dim. height * scale, width * scale
 	TopographyFunc       ModelFunc
 	WeatherFunc          ModelFunc
 	FuelFunc             ModelFunc
@@ -36,6 +39,7 @@ type FuocoConfig struct {
 type Fuoco struct {
 	FuocoConfig
 	Frames     [][][]int
+	Images     []image.Image
 	freqSample int
 }
 
@@ -51,18 +55,18 @@ type CaseResult struct {
 	Count  int
 }
 
-func New(config FuocoConfig) (f *Fuoco) {
-	f = &Fuoco{FuocoConfig: config}
+func New(config FuocoConfig) *Fuoco {
+	f := Fuoco{FuocoConfig: config}
 
-	(*f).Frames = make([][][]int, (*f).NumSample)
-	for idx, _ := range (*f).Frames {
-		(*f).Frames[idx] = make([][]int, (*f).Height)
-		for i, _ := range (*f).Frames[idx] {
-			(*f).Frames[idx][i] = make([]int, (*f).Width)
+	f.Frames = make([][][]int, f.NumSample)
+	for idx, _ := range f.Frames {
+		f.Frames[idx] = make([][]int, f.Height)
+		for i, _ := range f.Frames[idx] {
+			f.Frames[idx][i] = make([]int, f.Width)
 		}
 	}
 
-	return f
+	return &f
 }
 
 func (f Fuoco) Run() {
@@ -77,6 +81,7 @@ func (f Fuoco) Run() {
 		results[i] = <-ch
 	}
 
+	// Generates the counts
 	for s := 0; s < int(f.NumCases); s++ {
 		for idx := 0; idx < f.NumSample; idx++ {
 			frame := (*(results[s])).Frames[idx]
@@ -87,6 +92,15 @@ func (f Fuoco) Run() {
 					}
 				}
 			}
+		}
+	}
+
+	f.generateImages()
+	for idx, img := range f.Images {
+		s := "/tmp/test/" + fmt.Sprint(idx) + ".png"
+		err := f.saveImage(s, img)
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 }
