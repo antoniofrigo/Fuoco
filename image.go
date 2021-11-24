@@ -8,8 +8,6 @@ import (
 	"os"
 )
 
-// var RLDiag = [4]float64{0.0, 0.0, 0.5, 0.5}
-
 var RLDiag = [4]float64{0.0, 0.5, 0.5, 1.0}
 var LUDiag = [4]float64{0.5, 0.0, 1.0, 0.5}
 var LLDiag = [4]float64{0.0, 0.5, 0.5, 0.0}
@@ -17,11 +15,24 @@ var RUDiag = [4]float64{0.5, 1.0, 1.0, 0.5}
 var Horizontal = [4]float64{0.5, 0.0, 0.5, 1.0}
 var Vertical = [4]float64{0.0, 0.5, 1.0, 0.5}
 
+type imageWrapper struct {
+	Id    int
+	Image image.Image
+}
+
 func (f *Fuoco) generateImages() error {
 	(*f).Images = make([]image.Image, (*f).NumSample)
+	ch := make(chan imageWrapper)
 	for idx, _ := range (*f).Images {
-		(*f).Images[idx] = (*f).generatePNG((*f).Frames[idx])
+		go (*f).generatePNG((*f).Frames[idx], idx, ch)
 	}
+
+	for idx, _ := range (*f).Images {
+		result := <-ch
+		(*f).Images[result.Id] = result.Image
+		_ = idx
+	}
+
 	return nil
 }
 
@@ -37,7 +48,7 @@ func (f Fuoco) saveImage(name string, img image.Image) error {
 	return nil
 }
 
-func (f Fuoco) generatePNG(frame [][]int) image.Image {
+func (f Fuoco) generatePNG(frame [][]int, idx int, ch chan imageWrapper) {
 	scale := f.ImageScale
 	height := scale * f.Height
 	width := scale * f.Width
@@ -67,7 +78,7 @@ func (f Fuoco) generatePNG(frame [][]int) image.Image {
 		}
 	}
 	f.generateElevationMask(img)
-	return img
+	ch <- imageWrapper{Id: idx, Image: img}
 }
 
 // Generates contour lines based on data.

@@ -5,7 +5,6 @@ import (
 )
 
 func TestFuocoConfiguration(t *testing.T) {
-
 	height := 100
 	width := 100
 
