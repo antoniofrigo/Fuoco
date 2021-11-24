@@ -58,3 +58,21 @@ func SetParamGrid(paramGrid *[][]int, param int) {
 		}
 	}
 }
+
+func SetParamGridSlide(paramGrid *[][]int) {
+	for i, row := range *paramGrid {
+		for j, _ := range row {
+			(*paramGrid)[i][j] = i + j
+		}
+	}
+}
+
+func SetParamGridCircular(paramGrid *[][]int) {
+	height := len(*paramGrid)
+	width := len((*paramGrid)[0])
+	for i, row := range *paramGrid {
+		for j, _ := range row {
+			(*paramGrid)[i][j] = (i-height/2)*(i-height/2) + (j-width/2)*(j-width/2)
+		}
+	}
+}

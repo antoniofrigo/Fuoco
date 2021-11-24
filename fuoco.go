@@ -20,6 +20,7 @@ type FuocoConfig struct {
 	NumCases             uint
 	NumIterations        uint
 	NumSample            int // Number of samples
+	NumContours          int
 	Height               int // Height of grid
 	Width                int // Width of grid
 	ImageScale           int // Output image has dim. height * scale, width * scale
@@ -57,7 +58,6 @@ type CaseResult struct {
 
 func New(config FuocoConfig) *Fuoco {
 	f := Fuoco{FuocoConfig: config}
-
 	f.Frames = make([][][]int, f.NumSample)
 	for idx, _ := range f.Frames {
 		f.Frames[idx] = make([][]int, f.Height)
