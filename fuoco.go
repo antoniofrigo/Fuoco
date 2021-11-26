@@ -16,6 +16,10 @@ const (
 	BurnedOut
 )
 
+type ParamFunc func(state [][]State, param [][]int, i int, j int) float64
+type WindFunc func(state [][]State, speed float32, angle float32, i int, j int) float64
+type BurnoutFunc func(state [][]State, fuel [][]int, i int, j int) float64
+
 type FuocoConfig struct {
 	NumCases             uint
 	NumIterations        uint
@@ -24,10 +28,11 @@ type FuocoConfig struct {
 	Height               int // Height of grid
 	Width                int // Width of grid
 	ImageScale           int // Output image has dim. height * scale, width * scale
-	TopographyFunc       ModelFunc
-	WeatherFunc          ModelFunc
-	FuelFunc             ModelFunc
-	BurnoutFunc          ModelFunc
+	ElevationFunc        ParamFunc
+	MoistureFunc         ParamFunc
+	FuelFunc             ParamFunc
+	WindFunc             WindFunc
+	BurnoutFunc          BurnoutFunc
 	InitialState         [][]State
 	InitialElevation     [][]int
 	InitialFuel          [][]int // Between 0 and 100
@@ -43,11 +48,6 @@ type Fuoco struct {
 	Images     []image.Image
 	freqSample int
 }
-
-// Signature for function that propagates state changes.
-// This returns the probability that no ignition will occur due
-// to this quantity.
-type ModelFunc func(state *[][]State, param *[][]int, i int, j int) float64
 
 // Result of an individual case
 type CaseResult struct {
@@ -113,12 +113,14 @@ func (f Fuoco) runCase(id int, ch chan *CaseResult) {
 	// Unpack config
 	height := f.Height
 	width := f.Width
-	TopographyFunc := f.TopographyFunc
-	WeatherFunc := f.WeatherFunc
+	numSample := f.NumSample
+	numIterations := f.NumIterations
+
+	ElevationFunc := f.ElevationFunc
+	MoistureFunc := f.MoistureFunc
+	WindFunc := f.WindFunc
 	FuelFunc := f.FuelFunc
 	BurnoutFunc := f.BurnoutFunc
-	numIterations := f.NumIterations
-	numSample := f.NumSample
 
 	// Allocate frames samples
 	result.Frames = make([][][]State, numSample)
@@ -167,16 +169,17 @@ func (f Fuoco) runCase(id int, ch chan *CaseResult) {
 				switch state {
 				case Ready:
 					var p float64 = 1.0
-					p *= TopographyFunc(&(G1), &(f.InitialElevation), i, j)
-					p *= WeatherFunc(&(G1), &(f.InitialMoisture), i, j)
-					p *= FuelFunc(&(G1), &(f.InitialFuel), i, j)
+					p *= ElevationFunc(G1, f.InitialElevation, i, j)
+					p *= MoistureFunc(G1, f.InitialMoisture, i, j)
+					p *= FuelFunc(G1, f.InitialFuel, i, j)
+					p *= WindFunc(G1, f.InitialWindSpeed, f.InitialWindDirection, i, j)
 					p = 1 - p
 					if p > r.Float64() {
 						G2[i][j] = Burning
 					}
 				case Burning:
 					var p float64 = 1.0
-					p *= BurnoutFunc(&(G1), nil, i, j)
+					p *= BurnoutFunc(G1, nil, i, j)
 					p = 1 - p
 					if p > r.Float64() {
 						G2[i][j] = BurnedOut
