@@ -14,28 +14,28 @@ func TestFuocoConfiguration(t *testing.T) {
 	moistureGrid := MakeParamGrid(height, width)
 
 	SetStateGrid(&stateGrid, Ready)
-	SetParamGridCircular(&elevationGrid)
+	SetParamGridParabolicCylinder(&elevationGrid)
 	SetParamGrid(&fuelGrid, 100)
-	SetParamGrid(&moistureGrid, 100)
+	SetParamGridByReverseElevation(&moistureGrid, elevationGrid)
 
 	config := FuocoConfig{
-		NumCases:             1,
-		NumIterations:        100,
+		NumCases:             100,
+		NumIterations:        200,
 		NumSample:            10,
-		NumContours:          10,
+		NumContours:          20,
 		ImageScale:           6,
 		Height:               height,
 		Width:                width,
 		ElevationFunc:        Adjacent,
-		MoistureFunc:         OneParam,
-		WindFunc:             OneWind,
+		MoistureFunc:         Moisture,
+		WindFunc:             TrigonometricWind,
 		FuelFunc:             OneParam,
-		BurnoutFunc:          OneParam,
+		BurnoutFunc:          UniformBurnout,
 		InitialState:         stateGrid,
 		InitialElevation:     elevationGrid,
 		InitialFuel:          fuelGrid,
 		InitialMoisture:      moistureGrid,
-		InitialWindDirection: 1.2,
+		InitialWindDirection: 3.14,
 		InitialWindSpeed:     40.0,
 	}
 

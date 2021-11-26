@@ -17,7 +17,7 @@ const (
 )
 
 type ParamFunc func(state [][]State, param [][]int, i int, j int) float64
-type WindFunc func(state [][]State, speed float32, angle float32, i int, j int) float64
+type WindFunc func(state [][]State, speed float64, angle float64, i int, j int) float64
 type BurnoutFunc func(state [][]State, fuel [][]int, i int, j int) float64
 
 type FuocoConfig struct {
@@ -37,16 +37,17 @@ type FuocoConfig struct {
 	InitialElevation     [][]int
 	InitialFuel          [][]int // Between 0 and 100
 	InitialMoisture      [][]int // Between 0 and 100
-	InitialWindDirection float32 // Between 0.0 and 2*PI
-	InitialWindSpeed     float32 // Greater than 0.0
+	InitialWindDirection float64 // Between 0.0 and 2*PI
+	InitialWindSpeed     float64 // Greater than 0.0
 }
 
 // The main Fuoco object
 type Fuoco struct {
 	FuocoConfig
-	Frames     [][][]int
-	Images     []image.Image
-	freqSample int
+	Frames      [][][]int
+	Images      []image.Image
+	MoistureImg image.Image
+	freqSample  int
 }
 
 // Result of an individual case
@@ -103,6 +104,10 @@ func (f Fuoco) Run() {
 			log.Fatal(err)
 		}
 	}
+
+	s := "/tmp/test/moisture.png"
+	err := f.saveImage(s, f.MoistureImg)
+	_ = err
 }
 
 // Runs each individual case of the simulation

@@ -2,6 +2,7 @@ package fuoco
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -73,6 +74,53 @@ func SetParamGridCircular(paramGrid *[][]int) {
 	for i, row := range *paramGrid {
 		for j, _ := range row {
 			(*paramGrid)[i][j] = (i-height/2)*(i-height/2) + (j-width/2)*(j-width/2)
+		}
+	}
+}
+
+func SetParamGridParabolicCylinder(paramGrid *[][]int) {
+	height := len(*paramGrid)
+	width := len((*paramGrid)[0])
+	for i, row := range *paramGrid {
+		for j, _ := range row {
+			x := float64(i - height/2)
+			y := float64(j - width/2)
+			(*paramGrid)[i][j] = int((x + y) * (x + y + 1) / 100)
+		}
+	}
+}
+
+// Sets parameter between 0 and 100 with 100 at the bottom and
+// 0 at the highest elevation with a linear gradient
+func SetParamGridByReverseElevation(paramGrid *[][]int, elevation [][]int) {
+	minElevation := math.MaxInt64
+	maxElevation := math.MinInt64
+	for _, row := range elevation {
+		for _, value := range row {
+			if value < minElevation {
+				minElevation = value
+			} else if value > maxElevation {
+				maxElevation = value
+			}
+		}
+	}
+
+	m := 100.0 / float64(maxElevation-minElevation)
+	for i, row := range *paramGrid {
+		for j, _ := range row {
+			(*paramGrid)[i][j] = int(100.0 - m*float64(elevation[i][j]-minElevation))
+		}
+	}
+}
+
+func SetParamGridValley(paramGrid *[][]int) {
+	height := len(*paramGrid)
+	width := len((*paramGrid)[0])
+	for i, row := range *paramGrid {
+		for j, _ := range row {
+			x := float64(i - height/2)
+			y := float64(j - width/2)
+			(*paramGrid)[i][j] = int((x*x + 10*y*y) / (x*x + 100))
 		}
 	}
 }

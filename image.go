@@ -33,6 +33,9 @@ func (f *Fuoco) generateImages() error {
 		_ = idx
 	}
 
+	go (*f).generatePNG((*f).InitialMoisture, 0, ch)
+	(*f).MoistureImg = (<-ch).Image
+
 	return nil
 }
 
