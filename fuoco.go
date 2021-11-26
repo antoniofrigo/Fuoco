@@ -47,6 +47,7 @@ type Fuoco struct {
 	Frames      [][][]int
 	Images      []image.Image
 	MoistureImg image.Image
+	FuelImg     image.Image
 	freqSample  int
 }
 
@@ -98,16 +99,25 @@ func (f Fuoco) Run() {
 
 	f.generateImages()
 	for idx, img := range f.Images {
-		s := "/tmp/test/" + fmt.Sprint(idx) + ".png"
+		s := fmt.Sprintf("/tmp/test/%02.0f.png", float64(idx))
 		err := f.saveImage(s, img)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
+	f.MoistureImg = f.generateImg(f.InitialMoisture, 0, 0, 1)
 	s := "/tmp/test/moisture.png"
 	err := f.saveImage(s, f.MoistureImg)
-	_ = err
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s = "/tmp/test/fuel.png"
+	err = f.saveImage(s, f.generateImg(f.InitialFuel, 1, 0, 0))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // Runs each individual case of the simulation

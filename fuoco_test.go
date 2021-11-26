@@ -5,8 +5,8 @@ import (
 )
 
 func TestFuocoConfiguration(t *testing.T) {
-	height := 400
-	width := 400
+	height := 500
+	width := 500
 
 	stateGrid := MakeStateGrid(height, width)
 	elevationGrid := MakeParamGrid(height, width)
@@ -14,22 +14,22 @@ func TestFuocoConfiguration(t *testing.T) {
 	moistureGrid := MakeParamGrid(height, width)
 
 	SetStateGrid(&stateGrid, Ready)
-	SetParamGridParabolicCylinder(&elevationGrid)
-	SetParamGrid(&fuelGrid, 100)
+	SetParamGridBooth(&elevationGrid)
+	SetParamGridByReverseElevation(&fuelGrid, elevationGrid)
 	SetParamGridByReverseElevation(&moistureGrid, elevationGrid)
 
 	config := FuocoConfig{
-		NumCases:             100,
-		NumIterations:        200,
-		NumSample:            10,
-		NumContours:          20,
+		NumCases:             10,
+		NumIterations:        500,
+		NumSample:            20,
+		NumContours:          30,
 		ImageScale:           6,
 		Height:               height,
 		Width:                width,
 		ElevationFunc:        Adjacent,
 		MoistureFunc:         Moisture,
 		WindFunc:             TrigonometricWind,
-		FuelFunc:             OneParam,
+		FuelFunc:             LinearFuel,
 		BurnoutFunc:          UniformBurnout,
 		InitialState:         stateGrid,
 		InitialElevation:     elevationGrid,

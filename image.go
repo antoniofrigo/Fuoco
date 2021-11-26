@@ -33,9 +33,6 @@ func (f *Fuoco) generateImages() error {
 		_ = idx
 	}
 
-	go (*f).generatePNG((*f).InitialMoisture, 0, ch)
-	(*f).MoistureImg = (<-ch).Image
-
 	return nil
 }
 
@@ -82,6 +79,39 @@ func (f Fuoco) generatePNG(frame [][]int, idx int, ch chan imageWrapper) {
 	}
 	f.generateElevationMask(img)
 	ch <- imageWrapper{Id: idx, Image: img}
+}
+
+func (f Fuoco) generateImg(frame [][]int, rscale, gscale, bscale float64) image.Image {
+	scale := f.ImageScale
+	height := scale * f.Height
+	width := scale * f.Width
+	maxValue := 0
+	for _, row := range frame {
+		for _, value := range row {
+			if maxValue < value {
+				maxValue = value
+			}
+		}
+	}
+
+	img := image.NewNRGBA(image.Rect(0, 0, height, width))
+	for i, row := range frame {
+		for j, value := range row {
+			v := 200.0 * float64(value) / (1.0 * float64(maxValue))
+			for a := 0; a < scale; a++ {
+				for b := 0; b < scale; b++ {
+					img.Set(scale*i+a, scale*j+b, color.NRGBA{
+						R: uint8(rscale * v),
+						G: uint8(gscale * v),
+						B: uint8(bscale * v),
+						A: 255,
+					})
+				}
+			}
+		}
+	}
+	f.generateElevationMask(img)
+	return img
 }
 
 // Generates contour lines based on data.

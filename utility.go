@@ -124,3 +124,38 @@ func SetParamGridValley(paramGrid *[][]int) {
 		}
 	}
 }
+
+func SetParamGridBooth(paramGrid *[][]int) {
+	height := len(*paramGrid)
+	width := len((*paramGrid)[0])
+	for i, row := range *paramGrid {
+		for j, _ := range row {
+			x := float64(i - height/2)
+			y := float64(j - width/2)
+			(*paramGrid)[i][j] = int(math.Pow((x+2*y-7), 2) + math.Pow((2*x+y-5), 2))
+		}
+	}
+	ScaleParamGrid(paramGrid)
+}
+
+// Scales parameter grid down to the range 0 to 100
+func ScaleParamGrid(paramGrid *[][]int) {
+	maxValue, minValue := 0, math.MaxInt64
+	for i, row := range *paramGrid {
+		for j, _ := range row {
+			if maxValue < (*paramGrid)[i][j] {
+				maxValue = (*paramGrid)[i][j]
+			} else if minValue > (*paramGrid)[i][j] {
+				minValue = (*paramGrid)[i][j]
+			}
+		}
+	}
+	maxValue += minValue
+
+	for i, row := range *paramGrid {
+		for j, _ := range row {
+			(*paramGrid)[i][j] = int(100.0 / float64(maxValue) * float64((*paramGrid)[i][j]+minValue))
+		}
+	}
+
+}
