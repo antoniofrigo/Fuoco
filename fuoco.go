@@ -168,7 +168,7 @@ func (f Fuoco) runCase(id int, ch chan *CaseResult) {
 	G2[(height+1)/2][(width+1)/2] = Burning
 
 	for it := uint(0); it < numIterations; it++ {
-		if it%uint(f.freqSample) == 0 {
+		if it%uint(f.freqSample) == 0 && sample < numSample {
 			for i := 1; i < height+1; i++ {
 				for j := 1; j < width+1; j++ {
 					result.Frames[sample][i-1][j-1] = G1[i][j]
@@ -188,14 +188,12 @@ func (f Fuoco) runCase(id int, ch chan *CaseResult) {
 					p *= MoistureFunc(G1, f.InitialMoisture, i, j)
 					p *= FuelFunc(G1, f.InitialFuel, i, j)
 					p *= WindFunc(G1, f.InitialWindSpeed, f.InitialWindDirection, i, j)
-					p = 1 - p
 					if p > r.Float64() {
 						G2[i][j] = Burning
 					}
 				case Burning:
 					var p float64 = 1.0
 					p *= BurnoutFunc(G1, nil, i, j)
-					p = 1 - p
 					if p > r.Float64() {
 						G2[i][j] = BurnedOut
 					}
