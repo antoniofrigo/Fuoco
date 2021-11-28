@@ -97,6 +97,7 @@ func (f Fuoco) Run() {
 		}
 	}
 
+	// Generate all the sampled images
 	f.generateImages()
 	for idx, img := range f.Images {
 		s := fmt.Sprintf("/tmp/test/%02.0f.png", float64(idx))
@@ -106,6 +107,7 @@ func (f Fuoco) Run() {
 		}
 	}
 
+	// Save the moisture image
 	f.MoistureImg = f.generateImg(f.InitialMoisture, 0, 0, 1)
 	s := "/tmp/test/moisture.png"
 	err := f.saveImage(s, f.MoistureImg)
@@ -113,6 +115,7 @@ func (f Fuoco) Run() {
 		log.Fatal(err)
 	}
 
+	// Save the fuel image
 	s = "/tmp/test/fuel.png"
 	err = f.saveImage(s, f.generateImg(f.InitialFuel, 1, 0, 0))
 	if err != nil {

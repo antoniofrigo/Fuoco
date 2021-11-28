@@ -20,6 +20,7 @@ type imageWrapper struct {
 	Image image.Image
 }
 
+// Generate the sampled images
 func (f *Fuoco) generateImages() error {
 	(*f).Images = make([]image.Image, (*f).NumSample)
 	ch := make(chan imageWrapper)
@@ -36,6 +37,7 @@ func (f *Fuoco) generateImages() error {
 	return nil
 }
 
+// Save images to disk
 func (f Fuoco) saveImage(name string, img image.Image) error {
 	file, err := os.Create(name)
 	if err != nil {
@@ -48,6 +50,8 @@ func (f Fuoco) saveImage(name string, img image.Image) error {
 	return nil
 }
 
+// Generate an individual PNG given some frame of values. These are
+// scaled up by whatever the ImageScale factor is
 func (f Fuoco) generatePNG(frame [][]int, idx int, ch chan imageWrapper) {
 	scale := f.ImageScale
 	height := scale * f.Height
@@ -81,6 +85,8 @@ func (f Fuoco) generatePNG(frame [][]int, idx int, ch chan imageWrapper) {
 	ch <- imageWrapper{Id: idx, Image: img}
 }
 
+// Generate a generic image with a given color, defined by
+// the rscale, gscale, and bscale factors
 func (f Fuoco) generateImg(frame [][]int, rscale, gscale, bscale float64) image.Image {
 	scale := f.ImageScale
 	height := scale * f.Height
@@ -152,6 +158,7 @@ func (f Fuoco) generateElevationMask(img *image.NRGBA) {
 
 }
 
+// Generates the isovalue mask for marching squares
 func (f Fuoco) generateIsovalueMask(isovalueMask [][]bool, contour int) [][]bool {
 	for i, _ := range f.InitialElevation {
 		for j, value := range f.InitialElevation[i] {
@@ -165,6 +172,8 @@ func (f Fuoco) generateIsovalueMask(isovalueMask [][]bool, contour int) [][]bool
 	return isovalueMask
 }
 
+// Determines the necessary contour type for four points, with
+// i,j in the bottom left
 func (f Fuoco) contourType(isovalueMask [][]bool, i, j int) int {
 	res := 0
 	if isovalueMask[i][j] == true {
@@ -182,6 +191,8 @@ func (f Fuoco) contourType(isovalueMask [][]bool, i, j int) int {
 	return res
 }
 
+// Helper function to get the coordinates for the line endpoints
+// when generating the contours
 func getCoordinates(i, j int, shifts [4]float64, scale int) (int, int, int, int) {
 	x0 := int(float64(scale) * (float64(i) + shifts[0] - 0.5))
 	y0 := int(float64(scale) * (float64(j) + shifts[1] - 0.5))
@@ -190,6 +201,8 @@ func getCoordinates(i, j int, shifts [4]float64, scale int) (int, int, int, int)
 	return x0, y0, x1, y1
 }
 
+// Generates contour lines via marching squares
+// https://en.wikipedia.org/wiki/Marching_squares
 func (f Fuoco) drawContourSegment(contourType int, img *image.NRGBA, i, j int) {
 	scale := f.ImageScale
 	switch contourType {
@@ -246,6 +259,8 @@ func (f Fuoco) drawContourSegment(contourType int, img *image.NRGBA, i, j int) {
 	}
 }
 
+// Helper function to draw a straight line from
+// (x0, y0) to (x1, y1)
 func (f Fuoco) drawLine(img *image.NRGBA, x0, y0, x1, y1 int) {
 	if x0 == x1 && y0 == y1 {
 		return
